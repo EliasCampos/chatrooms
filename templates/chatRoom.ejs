@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Chatrooms</title>
+    <link rel="stylesheet" href="/css/master.css">
+  </head>
+  <body>
+    <h1>Chat Rooms</h1>
+    <h2><%= roomName %></h2>
+    <h3>Messages:</h3>
+
+    <table id="message-container">
+    <%
+    if (!!messages) {
+      for (let message of messages) {
+        let {date, author, text} = message;
+        const prettyDec = num => num > 9 ? ""+num : "0"+num ;
+        let year = date.getFullYear();
+        let month = prettyDec(date.getMonth());
+        let day = prettyDec(date.getDate());
+        let hours = prettyDec(date.getHours());
+        let minutes = prettyDec(date.getMinutes());
+        let seconds = prettyDec(date.getSeconds());
+    %>
+      <tr>
+        <td><%= `${year}-${month}-${day} ${hours}:${minutes}:${seconds}` %></td>
+        <td><%= author.length < 13 ? author :(author.slice(0, 13)+"...") %></td>
+        <td><%= text %></td>
+      </tr>
+    <% } } %>
+    </table>
+    <h3>Create New:</h3>
+    <form class="" action="/chatrooms/<%= roomId %>" method="PUT">
+      <input type="hidden" name="chatID" value="<%= roomId %>" id="chatID">
+      <input type="hidden" name="userID" value="<%= userId %>" id="userID">
+      <input type="hidden" name="author" value="<%= userName %>">
+      <textarea name="text" placeholder="New Message"
+      maxlength="100" required></textarea>
+      <input type="submit" value="Tweet">
+    </form>
+    <p><a href="/">Back to main</a></p>
+  <script src="/js/chatroom.js" charset="utf-8"></script>
+  </body>
+</html>

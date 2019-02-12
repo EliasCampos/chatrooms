@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/css/master.css">
+    <title>Chatrooms</title>
+  </head>
+  <body>
+    <% if (isSignUp) { %>
+      <h2>Congratulation, <span style="color:green"><%= newUser %></span>,
+        you just Signed Up!</h2>
+      <p><a href="/">Back to main</a></p>
+    <% } else { %>
+    <form class="New Form" action="/signup" method="POST">
+      <h2>Sign Up:</h2>
+      <input type="text" name="login" placeholder="Your Login" required><br/>
+      <input type="password" name="firstPassword" placeholder="Your Password" required><br/>
+      <input type="password" name="secondPassword" placeholder="Repeat Password" required><br/>
+      <input type="submit" value="Sign Up">
+      <p style="color:red"><%= issue %></p>
+    </form>
+    <% } %>
+  </body>
+</html>

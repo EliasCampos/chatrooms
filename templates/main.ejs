@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Chatrooms</title>
+    <link rel="stylesheet" href="/css/master.css">
+  </head>
+  <body>
+    <h1>Chat Rooms</h1>
+    <% if (isAuthorize) { %>
+    <h2>Welcome, <span style="color:green"><%= username %></span> !</h2>
+    <form class="logOut" action="/" method="POST">
+      <input type="submit" name="logout" value="Log out">
+    </form>
+    <p>Create a new chat room!</p>
+    <p><a href="/chatrooms/create">Create</a></p>
+    <h3>Your own created chat rooms:</h3>
+    <ul>
+    <% for (let room of ownChatRooms) { %>
+      <li>
+        <b><a href="/chatrooms/<%= room['room_id'] %>">
+          <%= room['room_name'] %>
+        </a></b>
+      </li>
+    <% } %>
+    </ul>
+    <h3>Get an Access to a private chat room:</h3>
+    <form id="private-chat-form" action="#">
+      <input type="text" name="chatname" placeholder="Chat Name" required>
+      <input type="password" name="chatpassw" placeholder="Password" required>
+      <input type="submit" value="Send">
+      <p class="issue"></p>
+    </form>
+    <h3>List of allowed chatrooms:</h3>
+    <button id="get-chatlist">GET</button>
+    <ul id="public-chatrooms">
+      <!-- Place for avaible chats -->
+    </ul>
+    <% } else { %>
+    <h2>Please Log In:</h2>
+    <form class="logIn" action="/" method="POST">
+      <input type="text" name="login" placeholder="Login" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Log in">
+      <span class="issue"></span>
+    </form>
+    <br>
+    <p><a href="/signup">Sign Up</a></p>
+    <% } %>
+    <p><span style="color:red"><%= issue %></span></p>
+
+    <!-- Scripts -->
+    <% if (isAuthorize) { %>
+    <script src="/js/main.js"></script>
+    <% } %>
+  </body>
+</html>

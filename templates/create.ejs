@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Chatrooms</title>
+    <link rel="stylesheet" href="/css/master.css">
+  </head>
+  <body>
+    <h2>Create a new chatroom:</h2>
+    <% if (newRoomID) { %>
+      <h2>A new chatroom has been created succesfuly!</h2>
+      <p><a href="/chatrooms/<%= newRoomID %>">Go to chatroom</a></p>
+    <% } else { %>
+    <form class="create-chat" action="/chatrooms/create" method="POST">
+      <label for="chat-name">Please, set a chatroom's name:</label>
+      <input type="text" name="chatname" id="chat-name" placeholder="Room Name" required>
+      <label for="chat-password">If you wanna make a private room, set a password:</label>
+      <input type="password" name="chatFirstPassw" id="chat-password" placeholder="Password">
+      <input type="password" name="chatSecondPassw" placeholder="Repeat password">
+      <input type="submit" value="Send">
+    </form>
+    <br/>
+    <p><span class="issue"><%= issue %></span></p>
+    <% } %>
+    <p><a href="/main">Back to main</a></p>
+  </body>
+</html>

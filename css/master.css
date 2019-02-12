@@ -1,0 +1,22 @@
+body {
+  padding:5%;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+input[type="submit"], button {
+  cursor: pointer;
+}
+
+ul, ol {
+  max-width: 30%;
+  background-color: lightgrey;
+  margin:0 auto;
+}

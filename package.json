@@ -1,0 +1,17 @@
+{
+  "name": "chatrooms",
+  "version": "1.0.0",
+  "description": "A simple web application to communicate via private chats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Elias",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.3",
+    "ejs": "^2.6.1",
+    "mysql": "^2.16.0",
+    "ws": "^6.1.3"
+  }
+}
