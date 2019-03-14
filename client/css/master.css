@@ -1,26 +1,341 @@
-body {
-  padding:5%;
-  font-family: sans-serif;
-  text-align: center;
+/* Main Page */
+html, body {
+  margin-top: -5px;
+  height: 100%;
+}
+/*Header*/
+header {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  align-items: center;
+  margin:0 auto;
+  min-height: 20%;
+  max-width: 1100px;
+  background-color: lightskyblue;
+}
+header h1 {
+  font-size: 48px;
 }
 
-form {
+main {
+  max-width: 1100px;
+  min-height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin:0 auto;
+}
+
+/* authorization */
+#authorization {
+  padding: 30px 40px;
+  background-color: lightgrey;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#authorization h2 {
+  font-size: 32px;
+}
+#authorization form {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
 }
-
-input[type="submit"], button {
-  cursor: pointer;
+#authorization input {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 5px 0;
+  padding: 5px 15px;
+  border: 2px solid darkgrey;
 }
-
-ul, ol {
-  max-width: 30%;
-  background-color: lightgrey;
-  margin:0 auto;
+#authorization input[type="submit"] {
+  cursor: pointer;
+  width: 50%;
+  line-height: 1.2;
+  font-size:24px;
+  font-weight:1000;
+  border-radius:10px;
+  transition: 0.5s;
+  border: 2px solid lightgrey;
+  color: white;
+  background-color: crimson;
+}
+#authorization input[type="submit"]:hover {
+  transition: 0.5s;
+  border: 2px solid red;
+  color: red;
+  background-color: white;
+}
+50
+#sign-up-button {
+  width:50%;
+}
+.action-link {
+  display: block;
+  width:100%;
+  height: 100%;
+  padding:5px 10px;
+  text-align: center;
+  text-decoration:none;
+  font-size:18px;
+  font-weight: bold;
+  transition:0.5s;
+  color:white;
+  background-color:green;
+}
+.action-link:hover {
+  transition:0.5s;
+  color:darkgreen;
+  background-color:white;
 }
 
 .issue {
+  height: 30px;
+  font-size:21px;
+  font-weight: bold;
   color:red;
+}
+.username {
+  color:green;
+}
+
+#user-top-panel, #own-chatrooms-panel, #chatroom-access-panel  {
+    width: 100%;
+}
+#own-chatrooms-panel, #chatroom-access-panel h3 {
+    font-family: sans-serif;
+    font-size: 24px;
+}
+
+/* User Panel */
+#user-top-panel {
+  background-color:rgb(160, 220, 255);
+}
+#user-top-panel h2 {
+  text-align: center;
+  font-size: 42px;
+}
+#user-top-panel form {
+  padding-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#user-top-panel input {
+  cursor: pointer;
+  width:20%;
+  padding:5px 10px;
+  font-size:20px;
+  font-weight: 600;
+  transition:0.5s;
+  color:rgb(20, 20, 20);
+  background-color:white;
+  border:2px solid grey;
+}
+#user-top-panel input:hover {
+  transition:0.5s;
+  color: white;
+  background-color:grey;
+  border:2px solid rgb(220, 220, 220);
+}
+#own-chatrooms-panel {
+  background-color: rgb(190, 230, 255);
+  text-align: center;
+  padding:10px 0;
+}
+#create-chat {
+  width:15%;
+  text-transform: capitalize;
+  margin:0 auto;
+}
+#create-chat a {
+  background-color:blue;
+  line-height: 1.5;
+  text-transform: capitalize;
+  font-size:24px;
+  font-weight: 900;
+}
+#create-chat a:hover {
+  color: darkblue;
+  background-color:white;
+}
+
+.chatlist {
+  display: block;
+  position: relative;
+  left: -2%;
+  margin: 0 auto;
+  list-style-type: none;
+  max-width:42%;
+  max-height: 100px;
+  overflow: auto;
+}
+.chatlist  li {
+  margin:10px 0;
+  border:2px solid grey;
+  overflow: hidden;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size:20px;
+
+}
+.chatlist  a {
+  display:block;
+  widht: 100%;
+  height: 100%;
+  line-height: 1.5;
+  text-decoration: none;
+  text-transform: capitalize;
+  transition:0.2s;
+  color:darkblue;
+  background-color:lightgreen;
+}
+.chatlist a:hover {
+  transition:0.2s;
+  color:darkgreen;
+  background-color:lightblue;
+}
+
+#chatroom-access-panel {
+  background-color:rgb(210, 245, 255);
+  text-align: center;
+  padding-bottom: 100px;
+}
+#chatroom-access-panel form {
+  display:flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  max-width:50%;
+  margin:0 auto;
+  padding:40px 15px 0 15px;
+  background-color: rgb(200, 220, 240);
+  border:2px solid grey;
+}
+#chatroom-access-panel input {
+  margin:5px 0;
+  padding:5px 15px;
+  font-family: monospace;
+  font-size:18px;
+  caret-color: green;
+  border:2px solid green;
+}
+#chatroom-access-panel input[type="submit"] {
+  cursor:pointer;
+  width:30%;
+  text-transform:uppercase;
+  color:green;
+  transition:0.25s;
+  background-color:lightyellow;
+}
+#chatroom-access-panel input[type="submit"]:hover {
+  transition:0.25s;
+  border:2px solid yellow;
+  color:yellow;
+  background-color:darkgreen;
+}
+#chatroom-access-panel div {
+  text-transform: uppercase;
+  font-family:monospace;
+  font-size: 30px;
+  font-weight:800;
+  color:green;
+  text-shadow: 3px 2px 1px yellow;
+}
+#chatroom-access-panel div > a {
+  display: block;
+  margin:5px auto;
+  padding: 10px 0;
+  max-width: 30%;
+  text-decoration: none;
+  text-shadow: none;
+  font-size: 36px;
+  transition:0.5s;
+  border:2px solid darkgreen;
+  color:green;
+  background-color:whitesmoke;
+}
+#chatroom-access-panel div > a:hover {
+  transition:0.5s;
+  border:2px solid yellow;
+  color:yellow;
+  background-color:darkgreen;
+}
+#own-chatrooms-panel h4, #chatroom-access-panel h4 {
+  font-size: 20px;
+}
+#allowed-chatrooms-button a {
+  font-size:36px;
+  font-weight: 800;
+}
+#get-chatlist {
+  cursor: pointer;
+  font-size:36px;
+  font-weight: 800;
+  padding:4px 20px;
+}
+/* Footer */
+footer {
+  min-height: 20%;
+  background-color: rgb(20, 20, 20);
+}
+footer p {
+  margin:0 auto;
+  max-width: 1100px;
+  padding: 50px 20px;
+  font-size: 18px;
+  font-family: monospace;
+  color:white;
+}
+#copyleft {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+/* Form */
+.create-form {
+  width:80%;
+  margin:10% auto;
+  padding:50px 20px;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: lightgrey;
+  border-radius:30px;
+}
+.create-form h2 {
+  font-size:48px;
+}
+.create-form label {
+  font-size: 20px;
+}
+.create-form input {
+  width:50%;
+  font-family: monospace;
+  font-size:24px;
+  line-height: 1.5;
+  margin: 5px 0;
+  padding: 0 30px;
+}
+.create-form input[type="submit"] {
+  cursor:pointer;
+  width: 35%;
+  padding:5px 0;
+  font-size:28px;
+  font-weight: 800;
+  transition:0.5s;
+  border:2px solid grey;
+}
+.create-form input[type="submit"]:hover {
+  transition:0.5s;
+  color:white;
+  background-color:rgb(20, 20, 20);
+  border:2px solid white;
 }

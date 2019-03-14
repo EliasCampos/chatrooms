@@ -1,8 +1,7 @@
 const WebSocket = require('ws');
 const httpServer = require('./httpServer.js');
 const db = require('./db_connection.js');
-
-const SERVER_URL = "http://localhost:3000";
+const {SERVER_URL} = require('../config.js');
 
 const chats = {};
 
@@ -57,4 +56,7 @@ function handleConnection(client) {
   client.on('error', console.error);
 }
 
-module.exports = port => httpServer.listen(port);
+module.exports = port => httpServer.listen(port, () => {
+  console.log(`Listening on ${port}...`);
+  db.connect().catch(err => {throw err});
+});

@@ -14,11 +14,11 @@ getChatsButton.addEventListener('click', () => {
   getChatsButton.parentNode.removeChild(getChatsButton);
 }, {once:true});
 getChatsButton.addEventListener('click', () => receiveChatsList(
-  document.getElementById('public-chatrooms')), {once:true});
+  document.getElementById('allowed-chatrooms')), {once:true});
 
 /* Functions */
 function receiveChatsList(listNode, requestOptions = GET_PARAMS) {
-  let url = window.location.origin + "/chatrooms/public";
+  let url = window.location.origin + "/chatrooms/list";
   const renderItem = item => {
     let itemNode = document.createElement('li');
     let link = document.createElement('a');
@@ -53,7 +53,7 @@ async function takePrivateChatAccess(event) {
   // response text will contain issue if permission denied
   // or link to chatroom instead
   if (response.status == 200) {
-    let accessNode = document.createElement('p');
+    let accessNode = document.createElement('div');
     let text = document.createTextNode("access accept:")
     let link = document.createElement('a');
     link.setAttribute('href', responseData);

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Chatrooms</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="stylesheet" href="/css/error.css">
+  </head>
+  <body>
+    <main>
+      <h1>Houston, we've had a problem...</h1>
+      <h2>
+        ERROR <span id="err-code"><%= status %></span>:
+        <span id="err-text"><%= message %></span>
+      </h2>
+      <p><% switch (status) {
+        case 400:%>
+          Hmm, your request is a quiet wrong. Please, try again.
+          <% break;
+        case 403:%>
+          Hey, you're not supposed to be here! If you see this page, it
+          means you haven't access to this content. Please authorize
+          or check if you made all required procedure to get this page.
+          <% break;
+        case 404:%>
+          Some ways doesn't lead us to nowhere... They doesn't
+          have a final destination point...Anyway, we haven't a web-resource
+          which you're looking for.
+          <% break;
+        case 500:%>
+          Sorry, we have some technical problem on the server. Please contact us
+          later. (Sometimes it's helpfull to reopen your browser)
+          <% break;
+        default:%>
+          You should never see this message. If you does, it means, our service
+          was totally fucked up.
+      <% } %></p>
+      <% if (status !== 500) { %>
+        <div class="to-main"><a href="/">Back to main</a></div>
+      <% } %>
+    </main>
+  </body>
+</html>

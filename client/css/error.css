@@ -1,0 +1,42 @@
+body {
+  background-color: whitesmoke;
+}
+main {
+  font-family: sans-serif;
+  max-width: 1100px;
+  margin: 6% auto;
+  padding:60px 30px 120px 30px;
+}
+h1 {
+  font-size: 48px;
+  text-align: center;
+  color: rgb(80, 80, 80);
+}
+h2 {
+  margin-top: 10%;
+  font-size: 36px;
+  text-align: center;
+}
+#err-code {
+  color: darkred;
+  font-family: monospace;
+  font-weight: 1000;
+}
+#err-text {
+  text-transform: uppercase;
+}
+p {
+  font-size: 30px;
+  font-weight: 500;
+}
+.to-main {
+  width:30%;
+  margin:6% auto 0 auto;
+  font-size: 30px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.to-main a {
+  color: crimson;
+  text-decoration: none;
+}
