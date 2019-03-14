@@ -18,6 +18,18 @@ class Cookie {
 }
 Cookie.pattern = /([^;=\s]+)=([^;=\s]+)(;|\s?$)/g;
 
+class Middleware {
+  constructor() {
+    this.handlers = [];
+  }
+  use(handler) {
+    this.handlers.push(handler);
+  }
+  operate(request, response) {
+    this.handlers.forEach(handler => handler(request, response));
+  }
+}
+
 class Router {
   constructor() {
     this.handlers = [];
@@ -26,11 +38,11 @@ class Router {
     /* Handler should be a function which takes
     request, response and specific string, founded
     in pattern (if it is). Pattern is a regExp which
-    describes uri
+    describes URI
     */
     this.handlers.push({method, pattern, handler});
   }
-  routeRequest(req, res) {
+  route(req, res) {
     let {pathname} = url.parse(req.url);
     let match;
     for (let obj of this.handlers) {
@@ -55,8 +67,8 @@ class Session {
       this._id = crypto.randomBytes(32).toString('hex');
       Session.storages[this._id] = Object.create(null);
       let newCooks = response.getHeader('Set-Cookie') || [];
-      response.setHeader('Set-Cookie',
-        newCooks.concat([`SESSID=${this._id}; HttpOnly`]));//???
+      newCooks.push(`SESSID=${this._id}; HttpOnly`)
+      response.setHeader('Set-Cookie', newCooks);
     } else this._id = sessid;
     this.storage = Session.storages[this._id];
   }
@@ -68,6 +80,7 @@ Session.storages = {};
 
 module.exports = {
   Cookie,
+  Middleware,
   Router,
   Session
 }

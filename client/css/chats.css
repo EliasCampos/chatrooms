@@ -1,0 +1,93 @@
+
+h2 {
+  font-size: 36px;
+  text-decoration: underline double grey;
+}
+/* Message containing */
+#message-list {
+  width: 100%;
+  height: 400px;
+  overflow: auto;
+}
+#message-list h3 {
+  text-align: center;
+}
+#message-container {
+  width:90%;
+  text-align: left;
+  line-height: 1.5;
+  list-style-type: none;
+}
+.msg-date {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 400;
+  color: grey;
+}
+.msg-author {
+  display: inline-block;
+  max-width:160px;
+  text-align: right;
+  padding:0 10px;
+  font-size:18px;
+  font-weight: 600;
+  color:green;
+}
+.msg-text {
+  display: inline-block;
+  font-family: sans-serif;
+  font-size:16px;
+}
+/* Input message */
+#message-panel {
+  padding: 20px 20px 0 20px;
+}
+#message-panel h3 {
+  text-align: center;
+  font-size: 20px;
+  font-family: monospace;
+  color: darkgreen;
+}
+#message-panel form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#message-panel textarea {
+  resize: none;
+  font-family: sans-serif;
+  font-size: 24px;
+  line-height: 1.5;
+  padding:5px 10px;
+  transition: 0.5s;
+  border:2px solid grey;
+  max-height: 40px;
+}
+#message-panel textarea:focus {
+  transition: 0.5s;
+  border:2px solid green;
+  max-height: 150px;
+}
+#message-panel input[type="submit"] {
+  cursor:pointer;
+  font-size:18px;
+  font-weight:bold;
+  text-transform: uppercase;
+  margin-top: 10px;
+  width:42%;
+  margin-left: 15px;
+  transition: 0.5s;
+  border:2px solid black;
+  color: black;
+  background-color:yellow;
+}
+#message-panel input[type="submit"]:hover {
+  transition: 0.5s;
+  border:2px solid green;
+  color: green;
+  background-color: lightblue;
+}
+#message-panel p {
+  width: 30%;
+  margin:20px auto;
+}

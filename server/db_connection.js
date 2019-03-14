@@ -1,12 +1,7 @@
 const mysql = require('mysql');
 const {logger} = require('./sources/events.js');
+const {DB_PARAMS} = require('../config.js');
 
-const DB_PARAMS = {
-  host: "localhost",
-  user: "chatsadmin",
-  password: "7H4R&d?",
-  database: "chatrooms"
-}
 const dbConnection = mysql.createConnection(DB_PARAMS);
 
 function connect() {

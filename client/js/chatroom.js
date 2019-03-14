@@ -21,13 +21,14 @@ function initialize() {
 function acceptMessage(event) {
   console.log("Got a message");
   let content = JSON.parse(event.data);
-  let messageRow = document.createElement('tr');
+  let messageRow = document.createElement('li');
   if (content.author.length >= 13) {
     let author = content.author
     content.author = author.slice(0, 13) + "...";
   }
   for (let item in content) {
-    let node = document.createElement('td');
+    let node = document.createElement('span');
+    node.className = `msg-${item}`;
     node.textContent = ""+content[item];
     messageRow.appendChild(node);
   }

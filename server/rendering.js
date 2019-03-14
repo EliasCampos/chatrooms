@@ -11,7 +11,7 @@ async function render(templateString, data) {
   );
   return html;
 }
-function deployPage(response, templateName, data, responseHead) {
+function uploadPage(response, templateName, data, responseHead) {
   /* head should contain response status and response message */
   let head = responseHead || {status:200, message:"OK"}
 
@@ -33,4 +33,4 @@ function deployPage(response, templateName, data, responseHead) {
       response.end('Problem on the server');
     });
 };
-module.exports = deployPage ;
+module.exports = uploadPage;

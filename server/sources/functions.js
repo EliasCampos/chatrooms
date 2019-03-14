@@ -43,15 +43,9 @@ function replaceHTMLSpecialChars(string) {
   return string.replace(pattern, char => HTML_SPECIAL_CHARS[char]);
 }// But, actually, EJS convert html special characters automaticaly!!!
 
-function addIfNotPresent(array) {
-  return function(element) {
-    if (!array.includes(element)) array.push(element);
-  }
-}
 
 module.exports = {
   readStream,
   replyWithFile,
-  replaceHTMLSpecialChars,
-  addIfNotPresent
+  replaceHTMLSpecialChars
 }
