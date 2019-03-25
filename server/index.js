@@ -5,7 +5,7 @@ const {SERVER_URL} = require('../config.js');
 
 const chats = {};
 
-const verifyClient = info => info.origin === SERVER_URL;
+const verifyClient = info => info.origin === (SERVER_URL || process.argv[2]);
 const server = new WebSocket.Server({
   server:httpServer,
   verifyClient

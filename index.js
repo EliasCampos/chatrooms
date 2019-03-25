@@ -1,3 +1,3 @@
 const runServer = require('./server');
-const PORT = 3000;
-runServer(PORT);
+const {SERVER_PORT} = require('./config.js');
+runServer(SERVER_PORT);
