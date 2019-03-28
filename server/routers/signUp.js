@@ -1,25 +1,17 @@
-const querystring = require('querystring');
-const {readStream} = require('../sources/functions.js');
 const db = require('../db_connection');
 const bcrypt = require('bcrypt'); SALT_ROUNDS = 10;
-const uploadPage = require('../rendering.js');
 
-const TEMPLATE_NAME = "signUp.ejs";
+const TEMPLATE_NAME = "signUp";
 
 function get(request, response) {
   let isSignUp = request.session.user !== undefined;
   let newUser = isSignUp ? request.session.user.name : null;
   let params = {isSignUp, issue:null, currentName:"", newUser}
-  uploadPage(response, TEMPLATE_NAME, params);
+  response.render(TEMPLATE_NAME, params);
 }
 
 async function post(request, response) {
-  let newUserQuery = await readStream(request);
-  let {
-    login,
-    firstPassword,
-    secondPassword
-  } = querystring.parse(newUserQuery);
+  let {login, firstPassword, secondPassword} = request.body;
 
   let dbCheckQuery = "SELECT * FROM users WHERE username = ?";
   let alreadyExists = (await db.query(dbCheckQuery, [login])).length !== 0;
@@ -41,13 +33,13 @@ async function post(request, response) {
     request.session.user = Object.create(null);
     request.session.user.id = dbResult.insertId;
     request.session.user.name = newUser = login;
-    request.session.user.allowedRooms = new Set();
+    request.session.user.allowedRooms = [];
     // Redirect to avoid repeat post request after sudden refresh:
-    response.setHeader("Location", `${request.serverURL}/signup`);
-    responseHead = {status:303, message:"See Other"}
+    response.redirect('/signup');
+    return;
   }
   let params = {isSignUp, issue, currentName, newUser}
-  uploadPage(response, TEMPLATE_NAME, params, responseHead);
+  response.render(TEMPLATE_NAME, params);
 }
 
 module.exports = {

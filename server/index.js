@@ -7,8 +7,7 @@ const chats = {};
 
 const verifyClient = info => info.origin === (SERVER_URL || process.argv[2]);
 const server = new WebSocket.Server({
-  server:httpServer,
-  verifyClient
+  server: httpServer
 });
 server.on('connection', handleConnection);
 
@@ -58,5 +57,5 @@ function handleConnection(client) {
 
 module.exports = port => httpServer.listen(port, () => {
   console.log(`Listening on ${port}...`);
-  db.connect().catch(err => {throw err});
+  db.connect().catch(err => {console.error("Can't connect database.")});
 });

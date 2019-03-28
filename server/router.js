@@ -1,4 +1,4 @@
-const {Router} = require('./sources/classes.js');
+const {Router} = require('express');
 // Warning: the line above can produce a problem
 
 // routers:
@@ -8,19 +8,17 @@ const takeChatAccess = require('./routers/takeChatAccess.js');
 const takeChatList = require('./routers/takeChatList.js');
 const getChatRoom = require('./routers/chatRoom.js');
 const createChat = require('./routers/createChat.js');
-const provideStaticFiles = require('./routers/publicStatic.js');
 
 const router = new Router();
 
-router.addHandler('GET', /^\/$|^\/main$/, mainPage.get);
-router.addHandler('POST', /^\/$/, mainPage.post);
-router.addHandler('GET', /^\/signup$/, signUp.get);
-router.addHandler('POST', /^\/signup$/, signUp.post);
-router.addHandler('GET', /^\/chatrooms\/getaccess$/, takeChatAccess);
-router.addHandler('GET', /^\/chatrooms\/list$/, takeChatList);
-router.addHandler('GET', /^\/chatrooms\/(\d+)$/, getChatRoom);
-router.addHandler('GET', /^\/chatrooms\/create$/, createChat.get);
-router.addHandler('POST', /^\/chatrooms\/create$/, createChat.post);
-router.addHandler('GET', /^(\/\w+\/\w+\.[a-zA-Z]+)$/, provideStaticFiles);
+router.get('/', mainPage.get);
+router.post('/', mainPage.post);
+router.get('/signup', signUp.get);
+router.post('/signup', signUp.post);
+router.get('/chatrooms/getaccess', takeChatAccess);
+router.get('/chatrooms/list', takeChatList);
+router.get('/chatrooms/create', createChat.get);
+router.post('/chatrooms/create', createChat.post);
+router.get('/chatrooms/:room_id', getChatRoom);
 
 module.exports = router;

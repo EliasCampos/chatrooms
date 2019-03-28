@@ -1,8 +1,18 @@
-const {Session} = require('../sources/classes.js');
+const session = require('express-session');
+const config = require('../../config.js');
 
-function startSession(request, response) {
-  let session = new Session(request, response);
-  request.session = session.storage;
+const sessionParams = {
+  cookie: {
+    // By default:
+    path: '/',
+    httpOnly: true,
+    secure: false,
+    maxAge: null
+  },
+  // Set manually:
+  secret: config.COOKIE_SECRET,
+  resave: false,
+  saveUninitialized: false
 }
 
-module.exports = startSession;
+module.exports = session(sessionParams);

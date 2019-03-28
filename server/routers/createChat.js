@@ -1,30 +1,29 @@
-const querystring = require('querystring');
-const {HTTPError} = require('../sources/errors.js');
-const {readStream} = require('../sources/functions.js');
 const db = require('../db_connection');
 const bcrypt = require('bcrypt'); const SALT_ROUNDS = 10;
-const uploadPage = require('../rendering.js');
 
-let TEMPLATE_NAME = 'create.ejs';
+let TEMPLATE_NAME = 'create';
 
 function get(request, response) {
   if (request.session.user === undefined) {
-    throw new HTTPError(403, "Forbidden");
+    response.status(403).render('error', {
+      status: 403,
+      message: "Forbidden"
+    });
+    return;
   }
-  uploadPage(response, TEMPLATE_NAME, {issue:"", newRoomID:null});
+  response.render(TEMPLATE_NAME, {issue:"", newRoomID:null});
 }
 
 async function post(request, response) {
   if (request.session.user === undefined) {
-    throw new HTTPError(403, "Forbidden");
+    response.status(403).render('error', {
+      status: 403,
+      message: "Forbidden"
+    });
+    return;
   }
 
-  let newChatQuery = await readStream(request);
-  let {
-    chatname,
-    chatFirstPassw,
-    chatSecondPassw
-  } = querystring.parse(newChatQuery);
+  let {chatname, chatFirstPassw, chatSecondPassw} = request.body;
 
   let dbCheckQuery = "SELECT * FROM chatrooms WHERE room_name = ?";
   let alreadyExists = !!(await db.queryOne(dbCheckQuery, [chatname]));
@@ -49,13 +48,12 @@ async function post(request, response) {
     let dbResult = await db.query(dbCreateQuery, queryParams);
     console.log(`A new chatroom '${chatname}' has been created!`);
     newRoomID = dbResult.insertId;
-    request.session.user.allowedRooms.add(newRoomID);
+    request.session.user.allowedRooms.push(newRoomID);
     let contentLocation = `${request.serverURL}/chatrooms/${newRoomID}`;
-    response.setHeader("Content-Location", contentLocation);
-    responseHead = {status:201, message:"Created"} // ??Is it a good desition??
+    response.set("Content-Location", contentLocation);
+    response.status(201);
   }
-  let template = "create.ejs";
-  uploadPage(response, template, {issue, newRoomID}, responseHead);
+  response.render(TEMPLATE_NAME, {issue, newRoomID}, responseHead);
 }
 
 

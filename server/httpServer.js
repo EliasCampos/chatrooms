@@ -1,8 +1,4 @@
 const http = require('http');
-const requestListener = require('./httpRequestListener.js');
+const app = require('./application.js');
 
-const server = http.createServer();
-server.on('request', requestListener);
-server.on('error', err => console.error(err));
-
-module.exports = server; 
+module.exports = http.createServer(app);

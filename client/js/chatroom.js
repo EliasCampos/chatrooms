@@ -1,5 +1,5 @@
 let messageContainer = document.getElementById("message-container")
-let ws = new WebSocket("ws://" + window.location.hostname);
+let ws = new WebSocket("ws://" + window.location.host);
 
 ws.addEventListener('open', initialize);
 ws.addEventListener('message', acceptMessage);

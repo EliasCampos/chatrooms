@@ -3,7 +3,8 @@ const db = require('../db_connection');
 
 function get(request, response) {
   if (request.session.user === undefined) {
-    throw new HTTPError(403, "Forbidden");
+    response.status(403).end();
+    return;
   }
 
   let dbPublicQuery = `SELECT room_id, room_name FROM chatrooms
@@ -20,12 +21,14 @@ function get(request, response) {
     .then(result => {
       let publicChats = result.pop();
       let chatList = [...result, ...publicChats];
-
-      response.setHeader('Content-Type', 'application/json');
-      response.writeHead(200, "OK");
-      response.end(JSON.stringify(chatList));
+      response.json(chatList);
     })
-    .catch(err => {throw err});
+    .catch(err => {
+      response.status(500).render('error', {
+        status: 500,
+        message: "Internal Server Error"
+      });
+    });
 }
 
 module.exports = get;

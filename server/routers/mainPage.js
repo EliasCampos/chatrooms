@@ -1,10 +1,7 @@
-const querystring = require('querystring');
-const {readStream} = require('../sources/functions.js');
 const db = require('../db_connection');
 const bcrypt = require('bcrypt'); const SALT_ROUNDS = 10;
-const uploadPage = require('../rendering.js');
 
-const TEMPLATE_NAME = "main.ejs";
+const TEMPLATE_NAME = "main";
 
 async function get(request, response) {
   let isAuthorize = request.session.user !== undefined;
@@ -16,27 +13,26 @@ async function get(request, response) {
     let dbQuery = `SELECT room_id, room_name FROM chatrooms
       WHERE user_id = ?`;
     ownChatRooms = await db.query(dbQuery, [userID]);
-    const updateAccess = id => request.session.user.allowedRooms.add(id);
+    const updateAccess = id => {
+      if (!request.session.user.allowedRooms.includes(id)) {
+        request.session.user.allowedRooms.push(id);
+      }
+    };
     ownChatRooms.map(item => +item['room_id']).forEach(updateAccess);
   }
   let params = {isAuthorize, issue:"", username, ownChatRooms}
-  uploadPage(response, TEMPLATE_NAME, params);
+  response.render(TEMPLATE_NAME, params);
 }
 
 async function post(request, response) {
-  let requestQuery = await readStream(request);
-  let requestData = querystring.parse(requestQuery);
   // Log Out, if already log in
-  if (requestData.logout !== undefined) {
+  if ('logout' in request.body) {
     delete request.session.user;
-    response.setHeader("Content-Type", "text/plain");
-    response.setHeader("Location", `${request.serverURL}/main`);
-    response.writeHead(303, "See Other");
-    response.end("Logged out...");
+    response.redirect('/');
     return;
   }
   // Check if incoming data are correct
-  let {login, password} = requestData;
+  let {login, password} = request.body;
   let dbCheckQuery = "SELECT * FROM users WHERE username = ?";
   let foundRow = await db.queryOne(dbCheckQuery, [login]);
   let exists = (foundRow !== undefined), isCorrectPassw;
@@ -48,15 +44,15 @@ async function post(request, response) {
   let responseHead, username;
   if (!isAuthorize) issue = "Incorrect login or password";
   else {
-    response.setHeader("Location", `${request.serverURL}/main`);
-    responseHead = {status:303, message:"See Other"}
     request.session.user = Object.create(null);
     request.session.user.id = foundRow["user_id"];
     request.session.user.name = username = login;
-    request.session.user.allowedRooms = new Set();
+    request.session.user.allowedRooms = [];
+    response.redirect('/');
+    return;
   }
   let params = {isAuthorize, issue, username, ownChatRooms:[]}
-  uploadPage(response, TEMPLATE_NAME, params, responseHead);
+  response.render(TEMPLATE_NAME, params);
 }
 
 module.exports = {
