@@ -4,24 +4,17 @@ const bcrypt = require('bcrypt'); const SALT_ROUNDS = 10;
 let TEMPLATE_NAME = 'create';
 
 function get(request, response) {
-  if (request.session.user === undefined) {
-    response.status(403).render('error', {
-      status: 403,
-      message: "Forbidden"
-    });
-    return;
-  }
+  // Checking authorization:
+  if (!request.isAuthorize)
+    return response.status(403).render('error', request.error);
+
   response.render(TEMPLATE_NAME, {issue:"", newRoomID:null});
 }
 
 async function post(request, response) {
-  if (request.session.user === undefined) {
-    response.status(403).render('error', {
-      status: 403,
-      message: "Forbidden"
-    });
-    return;
-  }
+  // Checking authorization:
+  if (!request.isAuthorize)
+    return response.status(403).render(request.error);
 
   let {chatname, chatFirstPassw, chatSecondPassw} = request.body;
 

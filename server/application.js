@@ -1,6 +1,8 @@
 const express = require('express');
 const logger = require('morgan')('tiny');
 const startSession = require('./middlewares/sessionStart.js');
+const verifyAuthorization = require('./middlewares/verifyAuthorization.js');
+const markJustSignedUp = require('./middlewares/markJustSignedUp.js');
 const router = require('./router.js');
 
 const app = express();
@@ -12,7 +14,10 @@ app.set('views', "templates");
 app.use(logger);
 app.use(express.static('client'));
 app.use(express.urlencoded({extended:false}));
+
 app.use(startSession);
+app.use(verifyAuthorization);
+app.use(markJustSignedUp);
 
 // Routing:
 app.use('/', router);

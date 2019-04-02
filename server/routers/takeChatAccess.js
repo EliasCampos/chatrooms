@@ -2,7 +2,7 @@ const db = require('../db_connection');
 const bcrypt = require('bcrypt');
 
 function get(request, response) {
-  if (request.session.user === undefined) {
+  if (!request.isAuthorize) {
     response.status(403).end();
     return;
   }

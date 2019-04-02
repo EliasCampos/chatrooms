@@ -1,5 +1,4 @@
 const {Router} = require('express');
-// Warning: the line above can produce a problem
 
 // routers:
 const mainPage = require('./routers/mainPage.js');

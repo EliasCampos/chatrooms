@@ -4,8 +4,12 @@ const bcrypt = require('bcrypt'); SALT_ROUNDS = 10;
 const TEMPLATE_NAME = "signUp";
 
 function get(request, response) {
-  let isSignUp = request.session.user !== undefined;
-  let newUser = isSignUp ? request.session.user.name : null;
+  // If it's already existen user, let redirect him to main:
+  if (request.isAuthorize && !request.new_user)
+    return response.redirect('/');
+
+  let isSignUp = 'new_user' in request;
+  let newUser = isSignUp ? request.new_user : null;
   let params = {isSignUp, issue:null, currentName:"", newUser}
   response.render(TEMPLATE_NAME, params);
 }
@@ -32,13 +36,13 @@ async function post(request, response) {
     isSignUp = true;
     request.session.user = Object.create(null);
     request.session.user.id = dbResult.insertId;
-    request.session.user.name = newUser = login;
+    request.session.user.name = request.session.new_user = login;
     request.session.user.allowedRooms = [];
     // Redirect to avoid repeat post request after sudden refresh:
     response.redirect('/signup');
     return;
   }
-  let params = {isSignUp, issue, currentName, newUser}
+  let params = {isSignUp, issue, currentName, newUser:request.session.new_user}
   response.render(TEMPLATE_NAME, params);
 }
 

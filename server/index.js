@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const httpServer = require('./httpServer.js');
 const db = require('./db_connection.js');
 const {SERVER_URL} = require('../config.js');
+const {formatPrettyDate} = require('./functions.js');
 
 const chats = {};
 
@@ -31,7 +32,9 @@ function handleConnection(client) {
     let dbSaveQuery = `INSERT INTO messages
     (message_id, author, text, date, room_id, user_id)
     VALUES (0, ?, ?, ?, ?, ?)`;
-    let {author, text, date} = content;
+    let {author, text} = content;
+    let date = new Date();
+    content.date = formatPrettyDate(date);
     let params = [author, text, date, chatID, userID];
     db.query(dbSaveQuery, params)
       .then(() => {

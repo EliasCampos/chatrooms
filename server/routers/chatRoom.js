@@ -3,13 +3,10 @@ const db = require('../db_connection');
 const TEMPLATE_NAME = 'chatRoom';
 
 async function get(request, response) {
-  if (request.session.user === undefined) {
-    response.status(403).render('error', {
-      status: 403,
-      message: "Forbidden"
-    });
-    return;
-  }
+  // Checking authorization:
+  if (!request.isAuthorize)
+    return response.status(403).render('error', request.error);
+
   let roomId = Number(request.params.room_id),
    userId = request.session.user.id,
    userName = request.session.user.name;

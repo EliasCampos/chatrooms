@@ -2,7 +2,7 @@ const {HTTPError} = require('../sources/errors.js');
 const db = require('../db_connection');
 
 function get(request, response) {
-  if (request.session.user === undefined) {
+  if (!request.isAuthorize) {
     response.status(403).end();
     return;
   }

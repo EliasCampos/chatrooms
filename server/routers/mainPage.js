@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt'); const SALT_ROUNDS = 10;
 const TEMPLATE_NAME = "main";
 
 async function get(request, response) {
-  let isAuthorize = request.session.user !== undefined;
+  let isAuthorize = request.isAuthorize;
   let username = isAuthorize ? request.session.user.name : null;
 
   let ownChatRooms;
@@ -26,7 +26,7 @@ async function get(request, response) {
 
 async function post(request, response) {
   // Log Out, if already log in
-  if ('logout' in request.body) {
+  if (request.isAuthorize && ('logout' in request.body)) {
     delete request.session.user;
     response.redirect('/');
     return;
