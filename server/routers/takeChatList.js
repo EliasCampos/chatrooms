@@ -1,4 +1,3 @@
-const {HTTPError} = require('../sources/errors.js');
 const db = require('../db_connection');
 
 function get(request, response) {

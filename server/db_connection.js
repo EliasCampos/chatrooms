@@ -1,5 +1,4 @@
 const mysql = require('mysql');
-const {logger} = require('./sources/events.js');
 const {DB_PARAMS} = require('../config.js');
 
 const dbConnection = mysql.createConnection(DB_PARAMS);
@@ -8,15 +7,7 @@ function connect() {
   return new Promise((resolve, reject) => {
     dbConnection.connect(err => {
       if (err) reject(err);
-      else {
-        let message = {
-          type:"db_connection",
-          info:`Connected to Database '${DB_PARAMS.database}'`,
-          date:(new Date()).toUTCString()
-        }
-        logger.emit('message', message);
-        resolve();
-      }
+      else resolve(console.log(`Connected to DB '${DB_PARAMS.database}'`));
     });
   });
 }
@@ -25,12 +16,7 @@ function disconnect() {
     dbConnection.end(err => {
       if (err) reject (err);
       else {
-        let message = {
-          type:"db_connection",
-          info:`End of connection with Database '${DB_PARAMS.database}'`,
-          date:(new Date()).toUTCString()
-        }
-        logger.emit('message', message);
+        console.log(`End of connection with DB '${DB_PARAMS.database}'`);
         resolve();
       }
     });
