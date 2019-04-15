@@ -1,14 +1,14 @@
-const db = require('../db_connection');
-const bcrypt = require('bcrypt'); const SALT_ROUNDS = 10;
+const user = require('../model/user.js');
+const chatroom = require('../model/chatroom.js');
 
-let TEMPLATE_NAME = 'create';
+const TEMPLATE_NAME = "create";
 
 function get(request, response) {
   // Checking authorization:
   if (!request.isAuthorize)
     return response.status(403).render('error', request.error);
 
-  response.render(TEMPLATE_NAME, {issue:"", newRoomID:null});
+  response.render(TEMPLATE_NAME, {issue:"", newRoomID:null, currentName:""});
 }
 
 async function post(request, response) {
@@ -17,36 +17,32 @@ async function post(request, response) {
     return response.status(403).render(request.error);
 
   let {chatname, chatFirstPassw, chatSecondPassw} = request.body;
-
-  let dbCheckQuery = "SELECT * FROM chatrooms WHERE room_name = ?";
-  let alreadyExists = !!(await db.queryOne(dbCheckQuery, [chatname]));
-
-  // Validate incoming data
-  let issue = "", newRoomID, responseHead;
-  if (alreadyExists) {
-    issue = `Name '${chatname}' is occupied`;
-  } else if (chatFirstPassw !== chatSecondPassw) {
-    issue = "Passwords didn't coincide each others";
-  } else {
-    let authorID = request.session.user.id;
-    let isPrivate = chatFirstPassw === "" ? "0" : "1";
-    let passwordHash = null;
-    if (!!isPrivate) {
-      passwordHash = await bcrypt.hash(chatFirstPassw, SALT_ROUNDS);
+  chatroom.create(
+    request.session.user,
+    chatname,
+    chatFirstPassw,
+    chatSecondPassw
+  ).then(newRoomResult => {
+    let viewParams = {issue: null, newRoomID: null, currentName: ""};
+    if (newRoomResult.ok) {
+      let newRoomID = newRoomResult.room.id;
+      user.addAllowedRoom(request.session.user, newRoomID);
+      let contentLocation = "/chatrooms/" + newRoomID;
+      response.set("Content-Location", contentLocation);
+      response.status(201);
+      viewParams.newRoomID = newRoomID;
+    } else {
+      let issue = newRoomResult.issue;
+      viewParams.issue = newRoomResult.issue;
+      viewParams.currentName = /occupied/.test(issue) ? "" : chatname;
     }
-    let dbCreateQuery = `INSERT INTO chatrooms
-      (room_id, room_name, room_token, is_private, user_id)
-      VALUES (0, ?, ?, ?, ?)`;
-    let queryParams = [chatname, passwordHash, isPrivate, authorID];
-    let dbResult = await db.query(dbCreateQuery, queryParams);
-    console.log(`A new chatroom '${chatname}' has been created!`);
-    newRoomID = dbResult.insertId;
-    request.session.user.allowedRooms.push(newRoomID);
-    let contentLocation = `${request.serverURL}/chatrooms/${newRoomID}`;
-    response.set("Content-Location", contentLocation);
-    response.status(201);
-  }
-  response.render(TEMPLATE_NAME, {issue, newRoomID}, responseHead);
+    response.render(TEMPLATE_NAME, viewParams);
+  }).catch(error => {
+    console.error(error);
+    response
+      .status(500)
+      .render('error', {status: 500,  message: "Internal Server Error"});
+  });
 }
 
 

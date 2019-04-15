@@ -1,5 +1,5 @@
-const db = require('../db_connection');
-const bcrypt = require('bcrypt');
+const user = require('../model/user.js');
+const chatroom = require('../model/chatroom.js');
 
 function get(request, response) {
   if (!request.isAuthorize) {
@@ -8,35 +8,22 @@ function get(request, response) {
   }
 
   let {chatname, chatpassw} = request.query;
-  let dbQuery = "SELECT room_id, room_token FROM chatrooms WHERE room_name = ?";
-  let dbPromise = db.queryOne(dbQuery, [chatname]);
-  let passwHashPromise = dbPromise
-    .then(dbRow => {
-      if (!dbRow) return Promise.resolve(null);
-      return bcrypt.compare(chatpassw, dbRow['room_token']);
-    });
+  chatroom.takeAccess(chatname, chatpassw)
+    .then(result => {
+      if (result.ok) user.addAllowedRoom(request.session.user, result.room_id);
+      const responseText = result.ok ?
+        "/chatrooms/" + result.room_id
+        : result.issue;
+      const responseStatus = result.ok ?
+        200
+        : /password/.test(result.issue) ? 403 : 404 ;
 
-  Promise.all([dbPromise, passwHashPromise])
-    .then(resolveds => {
-      let chatRow = resolveds[0], isCorrectPassw = resolveds[1];
-      let responseStatus, responseText;
-      if (!chatRow) {
-        responseStatus = 404;
-        responseText = `Chatroom '${chatname}' doesn't exist`;
-      }
-      else if (!isCorrectPassw) {
-        responseStatus = 403;
-        responseText = "Wrong Password";
-      }
-      else {
-        let id = +chatRow['room_id']
-        responseStatus = 200;
-        responseText = `/chatrooms/${id}`;
-        if (!request.session.user.allowedRooms.includes(id)) {
-          request.session.user.allowedRooms.push(id);
-        }
-      }
       response.type('txt').status(responseStatus).send(responseText);
+    }).catch(error => {
+      console.error(error);
+      response
+        .status(500)
+        .render('error', {status: 500,  message: "Internal Server Error"});
     });
 }
 

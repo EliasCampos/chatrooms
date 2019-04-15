@@ -1,6 +1,6 @@
 const db = require('../db_connection');
 
-const TEMPLATE_NAME = 'chatRoom';
+const TEMPLATE_NAME = "chatRoom";
 
 async function get(request, response) {
   // Checking authorization:

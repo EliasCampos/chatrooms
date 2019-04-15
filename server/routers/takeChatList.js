@@ -1,4 +1,5 @@
-const db = require('../db_connection');
+const user = require('../model/user.js');
+const chatroom = require('../model/chatroom.js');
 
 function get(request, response) {
   if (!request.isAuthorize) {
@@ -6,28 +7,24 @@ function get(request, response) {
     return;
   }
 
-  let dbPublicQuery = `SELECT room_id, room_name FROM chatrooms
-    WHERE is_private = '0' AND NOT user_id = ?`;
-  let dbAllowedQuery = `SELECT room_id, room_name FROM chatrooms
-    WHERE room_id = ?`;
-  let publicChatsPromise = db.query(dbPublicQuery, [request.session.user.id]);
-  let ownAllowedChatsPromises = [];
-  request.session.user.allowedRooms
-    .forEach(function(id) {
-      this.push(db.queryOne(dbAllowedQuery, [id]))
-    }, ownAllowedChatsPromises);
-  Promise.all([...ownAllowedChatsPromises, publicChatsPromise])
-    .then(result => {
-      let publicChats = result.pop();
-      let chatList = [...result, ...publicChats];
-      response.json(chatList);
+  const expectedPublic = chatroom.getPublic();
+  const expectedPrivate = Promise.all(
+    request.session.user.allowedRooms
+      .map(roomId => chatroom.getPrivate(roomId)));
+
+  Promise.all([expectedPublic, expectedPrivate])
+    .then(resolved => {
+      const public = resolved[0];
+      /*
+        Cause user.allowedRooms contains also ids of public chatrooms,
+        some of databases' request of private chatrooms above
+        will return 'undefined', so they should be skipped:
+      */
+      const private = resolved[1].filter(item => !!item);
+
+      response.json([...public, ...private]);
     })
-    .catch(err => {
-      response.status(500).render('error', {
-        status: 500,
-        message: "Internal Server Error"
-      });
-    });
+    .catch(err => response.status(500).end());
 }
 
 module.exports = get;
