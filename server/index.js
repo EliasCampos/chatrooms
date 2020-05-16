@@ -1,12 +1,10 @@
 const WebSocket = require('ws');
 const httpServer = require('./httpServer.js');
 const db = require('./db_connection.js');
-const {SERVER_URL} = require('../config.js');
 const {formatPrettyDate} = require('./functions.js');
 
 const chats = {};
 
-const verifyClient = info => info.origin === (SERVER_URL || process.argv[2]);
 const server = new WebSocket.Server({
   server: httpServer
 });

@@ -1,5 +1,4 @@
 const session = require('express-session');
-const config = require('../../config.js');
 
 const sessionParams = {
   cookie: {
@@ -10,9 +9,9 @@ const sessionParams = {
     maxAge: null
   },
   // Set manually:
-  secret: config.COOKIE_SECRET,
+  secret: process.env.COOKIES_SECRET,
   resave: false,
   saveUninitialized: false
-}
+};
 
 module.exports = session(sessionParams);
