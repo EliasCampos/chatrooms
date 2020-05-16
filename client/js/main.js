@@ -4,22 +4,30 @@ const GET_PARAMS = {
   credentials:'same-origin'
 };
 
-// Handle private chat access form
-let privateChatForm = document.getElementById("private-chat-form");
-privateChatForm.addEventListener('submit', takePrivateChatAccess);
+const CHAT_UPDATE_INTERVAL = 10 * 1000; // each 10 seconds
 
-// Take a list of avaible public chatrooms via AJAX request:
-let getChatsButton = document.getElementById("get-chatlist");
-getChatsButton.addEventListener('click', () => {
-  getChatsButton.parentNode.removeChild(getChatsButton);
-}, {once:true});
-getChatsButton.addEventListener('click', () => receiveChatsList(
-  document.getElementById('allowed-chatrooms')), {once:true});
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('loaded.');
+  // Handle private chat access form
+  let privateChatForm = document.getElementById("private-chat-form");
+  privateChatForm.addEventListener('submit', takePrivateChatAccess);
+
+  // Take a list of avaible public chatrooms via AJAX request:
+  const getChatListRecurrently = () => {
+    console.log('...');
+    const listNode = document.getElementById('allowed-chatrooms');
+    receiveChatsList(listNode).then(() => setTimeout(getChatListRecurrently, CHAT_UPDATE_INTERVAL))
+  };
+
+  getChatListRecurrently();
+
+});
 
 /* Functions */
 function receiveChatsList(listNode, requestOptions = GET_PARAMS) {
   let url = window.location.origin + "/chatrooms/list";
-  const renderItem = item => {
+  const clearListNode = () => {while (listNode.firstChild) listNode.removeChild(listNode.lastChild); return true};
+  const renderItem = (item) => {
     let itemNode = document.createElement('li');
     let link = document.createElement('a');
     link.setAttribute('href', "/chatrooms/"+item["id"]);
@@ -28,10 +36,10 @@ function receiveChatsList(listNode, requestOptions = GET_PARAMS) {
     listNode.appendChild(itemNode);
   };
 
-  fetch(url, requestOptions)
+  return fetch(url, requestOptions)
     .then(verifyResponse)
     .then(res => res.json())
-    .then(list => list.forEach(renderItem))
+    .then(list => clearListNode() && list.forEach(renderItem))
     .catch(console.error);
 }
 

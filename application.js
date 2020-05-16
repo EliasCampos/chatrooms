@@ -24,7 +24,7 @@ app.use(setUser);
 app.use('/chatrooms', chatsRouter);
 app.use('/', usersRouter);
 
-// If there is unsupported URI, will redirect to main:
-app.use((req, res) => res.redirect('/'));
+// If there is unsupported URI, will see 404 error:
+app.use((req, res) => res.status(404).render('error', {status: 404, message: "Not Found"}));
 
 module.exports = app;
