@@ -1,9 +1,8 @@
 const express = require('express');
 const logger = require('morgan')('tiny');
-const startSession = require('./middlewares/sessionStart.js');
-const verifyAuthorization = require('./middlewares/verifyAuthorization.js');
-const markJustSignedUp = require('./middlewares/markJustSignedUp.js');
-const router = require('./router.js');
+const { checkAuth, setUser, startSession } = require('./middlewares');
+
+const { chatsRouter, usersRouter } = require('./controllers');
 
 const app = express();
 
@@ -16,11 +15,13 @@ app.use(express.static('client'));
 app.use(express.urlencoded({extended:false}));
 
 app.use(startSession);
-app.use(verifyAuthorization);
-app.use(markJustSignedUp);
+app.use(checkAuth);
+app.use(setUser);
+
 
 // Routing:
-app.use('/', router);
+app.use('/chatrooms', chatsRouter);
+app.use('/', usersRouter);
 
 // If there is unsupported URI, will redirect to main:
 app.use((req, res) => res.redirect('/'));

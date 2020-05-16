@@ -1,0 +1,10 @@
+{
+  "development": {
+    "dialect": "postgres",
+    "host": "db",
+    "port": 5432,
+    "database": "chatrooms",
+    "username": "admin",
+    "password": "secret"
+  }
+}
