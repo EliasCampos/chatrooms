@@ -21,16 +21,6 @@
       <div id="own-chatrooms-panel">
         <h3>Create a new chat room!</h3>
         <div id="create-chat"><a class="action-link" href="/chatrooms/create">Create</a></div>
-        <h4>Your own created chat rooms:</h4>
-        <ul class="chatlist">
-        <% for (let room of ownChatRooms) { %>
-          <li>
-            <b><a href="/chatrooms/<%= room['room_id'] %>">
-              <%= room['room_name'] %>
-            </a></b>
-          </li>
-        <% } %>
-        </ul>
       </div>
       <div id="chatroom-access-panel">
         <h3>Get an Access to a private chat room:</h3>

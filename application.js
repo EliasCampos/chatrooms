@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser');
 const express = require('express');
 const logger = require('morgan')('tiny');
 const { checkAuth, setUser, startSession } = require('./middlewares');
@@ -11,6 +12,7 @@ app.set('views', "templates");
 
 // Middlewares:
 app.use(logger);
+app.use(bodyParser.json());
 app.use(express.static('client'));
 app.use(express.urlencoded({extended:false}));
 

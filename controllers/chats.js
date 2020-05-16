@@ -1,4 +1,7 @@
-const {Router} = require('express');
+const { Router } = require('express');
+const { Op } = require('sequelize');
+
+const { Chatroom } = require('../models');
 
 const TEMPLATE_NAME = "chatRoom";
 const CREATE_TEMPLATE_NAME = "create";
@@ -7,84 +10,11 @@ const CREATE_TEMPLATE_NAME = "create";
 const chatsRouter = new Router();
 
 
-chatsRouter.get('/list', (request, response) => {
-    if (!request.isAuthorize) {
-        response.status(403).end();
-        return;
-    }
-
-    const expectedPublic = chatroom.getPublic();
-    const expectedPrivate = Promise.all(
-        request.session.user.allowedRooms
-            .map(roomId => chatroom.getPrivate(roomId)));
-
-    Promise.all([expectedPublic, expectedPrivate])
-        .then(resolved => {
-            const _public = resolved[0];
-            /*
-              Cause user.allowedRooms contains also ids of public chatrooms,
-              some of databases' request of private chatrooms above
-              will return 'undefined', so they should be skipped:
-            */
-            const _private = resolved[1].filter(item => !!item);
-
-            response.json([..._public, ..._private]);
-        })
-        .catch(err => response.status(500).end());
-});
-
-chatsRouter.get('/:room_id', async (request, response) => {
-    // Checking authorization:
-    if (!request.isAuthorize)
-        return response.status(403).render('error', request.error);
-
-    let roomId = Number(request.params.room_id),
-        userId = request.session.user.id,
-        userName = request.session.user.name;
-    if (isNaN(roomId)) {
-        response.status(400).render('error', {
-            status: 400,
-            message: "Bad Request"
-        });
-        return;
-    }
-    let dbCheckQuery = "SELECT * FROM chatrooms WHERE room_id = ?";
-    let chatRoomRow = await db.queryOne(dbCheckQuery, [roomId]);
-    if (!chatRoomRow) {
-        response.status(404).render('error', {
-            status: 404,
-            message: "Not Found"
-        });
-        return;
-    }
-    let isPrivate = chatRoomRow['is_private'] === '1';
-    if (isPrivate && !request.session.user.allowedRooms.includes(roomId)) {
-        response.status(403).render('error', {
-            status: 403,
-            message: "Forbidden"
-        });
-        return;
-    }
-    let roomName = chatRoomRow['room_name'];
-    let messages;
-    try {
-        let getMessagesQuery = `SELECT date, author, text
-      FROM messages WHERE room_id = ? ORDER BY date DESC`;
-        messages = await db.query(getMessagesQuery, [roomId]);
-    } catch (err) {
-        console.error("Problem with DB connection", err.stack);
-    }
-
-    let params = {roomId, roomName, userId, userName, messages}
-    response.render(TEMPLATE_NAME, params);
-});
-
 chatsRouter.get('/create', (request, response) => {
     // Checking authorization:
     if (!request.isAuthorize)
         return response.status(403).render('error', request.error);
-
-    response.render(CREATE_TEMPLATE_NAME, {issue:"", newRoomID:null, currentName:""});
+    return response.render(CREATE_TEMPLATE_NAME, {issue:"", newRoomID: null, currentName:""});
 });
 
 chatsRouter.post('/create', async (request, response) => {
@@ -92,60 +22,105 @@ chatsRouter.post('/create', async (request, response) => {
     if (!request.isAuthorize)
         return response.status(403).render(request.error);
 
-    let {chatname, chatFirstPassw, chatSecondPassw} = request.body;
-    chatroom.create(
-        request.session.user,
-        chatname,
-        chatFirstPassw,
-        chatSecondPassw
-    ).then(newRoomResult => {
-        let viewParams = {issue: null, newRoomID: null, currentName: ""};
-        if (newRoomResult.ok) {
-            let newRoomID = newRoomResult.room.id;
-            user.addAllowedRoom(request.session.user, newRoomID);
-            let contentLocation = "/chatrooms/" + newRoomID;
-            response.set("Content-Location", contentLocation);
-            response.status(201);
-            viewParams.newRoomID = newRoomID;
-        } else {
-            let issue = newRoomResult.issue;
-            viewParams.issue = newRoomResult.issue;
-            viewParams.currentName = /occupied/.test(issue) ? "" : chatname;
-        }
-        response.render(CREATE_TEMPLATE_NAME, viewParams);
-    }).catch(error => {
-        console.error(error);
-        response
-            .status(500)
-            .render('error', {status: 500,  message: "Internal Server Error"});
-    });
+    let chatname = String(request.body.chatname || '').trim();
+    let password = String(request.body.password || '') || null;
+
+    let issue = null;
+
+    if (!chatname) {
+        issue = 'Chat name is required.';
+    } else if (!!(await Chatroom.findOne({where: {name: chatname}}))) {
+        issue = `Name ${chatname} is occupied.`;
+    }
+
+    if (issue) {
+        return response.render(CREATE_TEMPLATE_NAME, {issue, newRoomID: null, currentName: ""});
+    }
+
+    let chat = new Chatroom();
+    chat.UserId = request.session.user.id;
+    chat.name = chatname;
+    if (password) {
+        await chat.setPassword(password);
+    }
+
+    await chat.save();
+
+    response.set("Content-Location", `/chatrooms/${chat.id}`);
+    response.status(201);
+    return response.render(CREATE_TEMPLATE_NAME, {issue, newRoomID: chat.id, currentName: chat.name});
+
 });
 
-chatsRouter.get('/getaccess', (request, response) => {
+chatsRouter.post('/getaccess', async (request, response) => {
+    if (!request.isAuthorize) {
+        response.status(403).end();
+        return;
+    }
+    console.log(request.body);
+    console.log(request.data);
+    let chatname = String(request.body.chatname || '').trim();
+    let chatpassw = String(request.body.chatpassw || '');
+
+    if (!chatname || !chatpassw) {
+        return response.status(400).send('Chat name and password are required.');
+    }
+    let chat = await Chatroom.findOne({where: {name: chatname}});
+    if (!chat || !(await chat.checkPassword(chatpassw))) {
+        return response.status(400).send('Incorrect chat name or password.');
+    }
+
+    request.session.allowedRooms = (request.session.allowedRooms || []);
+    if (!request.session.allowedRooms.includes(chat.id)) {
+        request.session.allowedRooms.push(chat.id);
+    }
+    console.log(request.session.allowedRooms);
+    return response.status(200).send(`/chatrooms/${chat.id}`);
+});
+
+
+chatsRouter.get('/list', async (request, response) => {
     if (!request.isAuthorize) {
         response.status(403).end();
         return;
     }
 
-    let {chatname, chatpassw} = request.query;
-    chatroom.takeAccess(chatname, chatpassw)
-        .then(result => {
-            if (result.ok) user.addAllowedRoom(request.session.user, result.room_id);
-            const responseText = result.ok ?
-                "/chatrooms/" + result.room_id
-                : result.issue;
-            const responseStatus = result.ok ?
-                200
-                : /password/.test(result.issue) ? 403 : 404 ;
+    const allowedIds = (request.session.allowedRooms || []);
 
-            response.type('txt').status(responseStatus).send(responseText);
-        }).catch(error => {
-        console.error(error);
-        response
-            .status(500)
-            .render('error', {status: 500,  message: "Internal Server Error"});
+    const allowedRooms = await Chatroom.findAll({
+        raw: true,
+        where: {
+            [Op.or]: [
+                {token: {[Op.is]: null}},
+                {id: {[Op.in]: allowedIds}},
+                {UserId: request.session.user.id},
+            ]
+        }
     });
+    return response.json(allowedRooms);
 });
 
+
+chatsRouter.get('/:id', async (request, response) => {
+    // Checking authorization:
+    if (!request.isAuthorize)
+        return response.status(403).render('error', request.error);
+
+    let roomId = Number(request.params.id),
+        userId = request.session.user.id,
+        userName = request.session.user.name;
+    if (isNaN(roomId)) return response.status(400).render('error', { status: 400, message: "Bad Request" });
+    let chat = await Chatroom.findOne({where: {id: roomId}});
+    if (!chat) return response.status(404).render('error', {status: 404, message: "Not Found"});
+
+    let allowedRooms = request.session.allowedRooms || [];
+
+    if (chat.token !== null && !allowedRooms.includes(roomId)) {
+        return response.status(403).render('error', { status: 403, message: "Forbidden"});
+    }
+    let messages = [];
+    let params = {roomId, roomName: chat.name, userId, userName, messages};
+    response.render(TEMPLATE_NAME, params);
+});
 
 module.exports = {chatsRouter};
