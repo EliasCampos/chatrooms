@@ -1,4 +1,5 @@
 const {Router} = require('express');
+const { body, validationResult } = require('express-validator');
 
 const {User} = require('../models');
 
@@ -13,74 +14,86 @@ usersRouter.get('/signup', (request, response) => {
     if (request.session.user && !request.session.isJustSignedUp) {
         return response.redirect('/');
     }
-
-    let currentName = !!request.session.isJustSignedUp ? request.session.user.username : '';
-    let params = { isSignUp: !!request.session.isJustSignedUp , issue: null, currentName };
+    let login = !!request.session.isJustSignedUp ? request.session.user.username : '';
+    let ctx = { isSignUp: !!request.session.isJustSignedUp , errors: null, login };
     request.session.isJustSignedUp = false;
-    response.render(SIGN_UP_TEMPLATE_NAME, params);
+    response.render(SIGN_UP_TEMPLATE_NAME, ctx);
 });
 
-usersRouter.post('/signup', async (request, response) => {
-    let login = String(request.body.login || '').trim();
-    let firstPassword = String(request.body.firstPassword || '');
-    let secondPassword = String(request.body.secondPassword || '');
-
-    let issue = null;
-    let currentName = '';
-    if (!login || !firstPassword || !secondPassword) {
-        issue = "Both login and password are required";
+usersRouter.post('/signup', [
+    body('login')
+        .not().isEmpty().withMessage('Login is required').trim().escape()
+        .custom(value => {
+            return User.findOne({where: {username: value}})
+                .then(user => {
+                    if (user) return Promise.reject('Login already in use');
+                    return Promise.resolve(true);
+                });
+        }),
+    body('password1')
+        .not().isEmpty().withMessage('Password is required')
+        .isLength({min: 6}).withMessage('Password should have at least 6 characters'),
+    body('password2')
+        .not().isEmpty().withMessage('Password confirmation is required')
+        .custom((value, { req }) => {
+            if (!!value && req.body.password1 && value !== req.body.password1) {
+                throw new Error('Password confirmation does not match password');
+            }
+            return true;
+        })
+], async (request, response) => {
+    let errors = validationResult(request);
+    if (!errors.isEmpty()) {
+        const ctx = {login: request.body.login || '', isSignUp: false, errors: errors.array({ onlyFirstError: true })};
+        return response.render(SIGN_UP_TEMPLATE_NAME, ctx);
     }
-    else if ((await User.findOne({where: {username: login}}).then(user => !!user))) {
-        issue = `User with username ${login} already exists.`;
-    } else if (firstPassword !== secondPassword) {
-        issue = "Passwords didn't coincide each others";
-        currentName = login;
-    }
-
-    if (issue) return response.render(SIGN_UP_TEMPLATE_NAME, {isSignUp: false, issue, currentName, newUser: null});
-
     let user = new User();
-    user.username = login;
-    await user.setPassword(firstPassword).then(() => user.save());
+    user.username = request.body.login;
+    await user.setPassword(request.body.password1).then(() => user.save());
     request.session.user = user;
     request.session.isJustSignedUp = true;
     response.redirect('/signup');
 });
 
 
+usersRouter.post('/logout', async (request, response) => {
+    if (request.session.user) {
+        delete request.session.user;
+    }
+    response.redirect('/');
+});
+
+
 usersRouter.get('/', async (request, response) => {
     let isAuthorize = !!request.session.user;
     let username = isAuthorize ? request.session.user.username : null;
-
-    let chatrooms = null;
-    // TODO: chatrooms
-    // TODO: optimize rendering configuration procedure
-    let viewParams = {
-        isAuthorize,
-        issue:"",
-        username,
-        ownChatRooms: chatrooms || []
-    };
-    response.render(TEMPLATE_NAME, viewParams);
+    response.render(TEMPLATE_NAME, {isAuthorize, errors: null, username});
 });
 
-usersRouter.post('/', async (request, response) => {
-    // Log Out, if already log in
-    if (request.session.user) {
-        delete request.session.user;
-        return response.redirect('/');
+usersRouter.post('/', [
+    body('password')
+        .not().isEmpty().withMessage('Password is required'),
+    body('login')
+        .not().isEmpty().withMessage('Login is required').trim().escape()
+        .custom((value, {req}) => {
+            return User.findOne({where: {username: req.body.login}})
+                .then(user => {
+                    if (!user) return Promise.reject('Invalid login or password');
+                    req.user = user;
+                    return user.checkPassword(req.body.password);
+                })
+                .then(isCorrectPassword => {
+                    if (!isCorrectPassword) return Promise.reject('Invalid login or password');
+                    return Promise.resolve(true);
+                })
+        })
+], async (request, response) => {
+    let errors = validationResult(request);
+    if (!errors.isEmpty()) {
+        let ctx = {isAuthorize: false, errors: errors.array({ onlyFirstError: true }), username: ''};
+        return response.render(TEMPLATE_NAME, ctx)
     }
-    // Check if incoming data are correct
-    let login = String(request.body.login || '').trim();
-    let password = String(request.body.password || '');
-
-    let user = await User.findOne({where: {username: login}});
-    if (user === null || !(await user.checkPassword(password))) {
-        let issue = "Incorrect login or password";
-        return response.render(TEMPLATE_NAME, {isAuthorize: false, issue, currentName:'', newUser: null});
-    }
-
-    request.session.user = user;
+    request.session.user = request.user;
     response.redirect('/');
 });
 

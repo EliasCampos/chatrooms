@@ -47,10 +47,8 @@ async function takePrivateChatAccess(event) {
   event.preventDefault();
   let form = event.target;
   let url = window.location.origin + `/chatrooms/getaccess`;
-  let body = { chatname: form.chatname.value, chatpassw: form.chatpassw.value };
-  console.log(body);
+  let body = { chatname: form.chatname.value, password: form.password.value };
   form.reset();
-  console.log(body);
   [].forEach.call(form.elements, item => item.setAttribute('disabled', true));
   let response = await fetch(url, {
     method: 'POST',
@@ -63,14 +61,14 @@ async function takePrivateChatAccess(event) {
   });
   try {await verifyResponse(response);}
   catch (err) {return console.error("Failed to fetch:", err.message);}
-  let responseData = await response.text();
+  let responseData = await response.json();
   // response text will contain issue if permission denied
   // or link to chatroom instead
   if (response.status === 200) {
     let accessNode = document.createElement('div');
     let text = document.createTextNode("access accept:");
     let link = document.createElement('a');
-    link.setAttribute('href', responseData);
+    link.setAttribute('href', responseData.url);
     link.textContent = "link";
     accessNode.appendChild(text);
     accessNode.appendChild(link);
@@ -80,7 +78,15 @@ async function takePrivateChatAccess(event) {
     form.parentNode.removeChild(form);
   } else {
     [].forEach.call(form.elements, item => item.removeAttribute('disabled'));
-    form.querySelector(".issue").textContent = responseData;
+    let errorEl = document.getElementById('issues');
+    while (errorEl.firstChild) errorEl.removeChild(errorEl.lastChild);
+    for (let error of responseData.errors) {
+      let el = document.createElement('p');
+      el.className = 'issue';
+      el.textContent = error.msg;
+      errorEl.appendChild(el);
+    }
+
   }
 }
 

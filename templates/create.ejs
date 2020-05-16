@@ -19,7 +19,9 @@
         <label for="chat-password">If you wanna make a private room, set a password:</label>
         <input type="password" name="password" id="chat-password" placeholder="Password">
         <input type="submit" value="Send">
-        <p><span class="issue"><%= issue %></span></p>
+        <% if (!!errors) { for (let error of errors) { %>
+        <p><span class="issue"><%= error.msg %></span></p>
+          <% }} %>
         <p><a class="action-link" href="/">Back to main</a></p>
       </form>
       <% } %>

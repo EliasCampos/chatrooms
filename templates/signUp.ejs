@@ -9,23 +9,25 @@
   <body>
     <main>
       <% if (isSignUp) { %>
-        <h1>Congratulation, <span class="username"><%= currentName %></span>,
+        <h1>Congratulation, <span class="username"><%= login %></span>,
           you just Signed Up!</h1>
         <p><a class="action-link" href="/">Back to main</a></p>
       <% } else { %>
       <form class="create-form" action="/signup" method="POST">
         <h2>Sign Up:</h2>
         <label for="new-user-login">Your login:</label>
-        <input type="text" name="login" id="new-user-login" value="<%= currentName %>"
+        <input type="text" name="login" id="new-user-login" value="<%= login %>"
           placeholder="allowed: a-zA-Z0-9" pattern="[a-zA-Z0-9]+" required>
         <label for="new-user-passw">Your password:</label>
-        <input type="password" name="firstPassword" id="new-user-passw"
+        <input type="password" name="password1" id="new-user-passw"
           placeholder="at least 6 chars" minlength="6" required>
         <label for="new-user-repeat-passw">Repeat password:</label>
-        <input type="password" name="secondPassword" id="new-user-repeat-passw"
+        <input type="password" name="password2" id="new-user-repeat-passw"
           placeholder="at least 6 chars" minlength="6" required>
         <input type="submit" value="Sign Up">
-        <p><span class="issue"><%= issue %></span></p>
+        <% if (errors) { for (let error of errors) { %>
+            <p><span class="issue"><%= error.msg %></span></p>
+          <% }} %>
         <p><a class="action-link" href="/">Back to main</a></p>
       </form>
       <% } %>

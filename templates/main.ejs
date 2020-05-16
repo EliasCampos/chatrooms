@@ -14,7 +14,7 @@
       <% if (isAuthorize) { %>
       <div id="user-top-panel">
         <h2>Welcome, <span class="username"><%= username %></span> !</h2>
-        <form class="logOut" action="/" method="POST">
+        <form class="logOut" action="/logout" method="POST">
           <input type="submit" name="logout" value="Log out">
         </form>
       </div>
@@ -26,9 +26,13 @@
         <h3>Get an Access to a private chat room:</h3>
         <form id="private-chat-form" action="#">
           <input type="text" name="chatname" placeholder="Chat Name" required>
-          <input type="password" name="chatpassw" placeholder="Password" required>
+          <input type="password" name="password" placeholder="Password" required>
           <input type="submit" value="Send">
-          <p class="issue"></p>
+          <div id="issues">
+            <% if (errors) { for (let error of errors) {%>
+              <p class="issue"><%= error.msg %></p>
+            <% }} %>
+          </div>
         </form>
         <h4>List of allowed chatrooms:</h4>
         <ul id="allowed-chatrooms" class="chatlist">
@@ -45,7 +49,9 @@
             placeholder="Password" required>
           <input type="submit" value="LOG IN">
         </form>
-        <div class="issue"><%= issue %></div>
+        <% if (errors) { for (let error of errors) {%>
+        <div class="issue"><%= error.msg %></div>
+          <% }} %>
         <h3>Still didn't have an account?</h3>
         <div id="sign-up-button"><a class="action-link" href="/signup">Sign Up</a></div>
         <% } %>
