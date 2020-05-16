@@ -18,18 +18,19 @@
         <%
         if (!!messages) {
           for (let message of messages) {
-            let {date, author, text} = message;
+            let {createdAt, author, text} = message;
+            let username = author.username;
             const prettyDec = num => num > 9 ? ""+num : "0"+num ;
-            let year = date.getFullYear();
-            let month = prettyDec(date.getMonth());
-            let day = prettyDec(date.getDate());
-            let hours = prettyDec(date.getHours());
-            let minutes = prettyDec(date.getMinutes());
-            let seconds = prettyDec(date.getSeconds());
+            let year = createdAt.getFullYear();
+            let month = prettyDec(createdAt.getMonth());
+            let day = prettyDec(createdAt.getDate());
+            let hours = prettyDec(createdAt.getHours());
+            let minutes = prettyDec(createdAt.getMinutes());
+            let seconds = prettyDec(createdAt.getSeconds());
         %>
           <li>
             <span class="msg-date"><%= `${year}-${month}-${day} ${hours}:${minutes}:${seconds}` %></span>
-            <span class="msg-author"><%= author.length < 13 ? author :(author.slice(0, 13)+"...") %></span>
+            <span class="msg-author"><%= username.length < 13 ? username :(username.slice(0, 13)+"...") %></span>
             <span class="msg-text"><%= text %></span>
           </li>
         <% } } %>

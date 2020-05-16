@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     },
 
     name: {
-    type: DataTypes.STRING,
+      type: DataTypes.STRING,
       unique: true,
       allowNull: false,
       validate: {
@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
 
   }, {});
   Chatroom.associate = function(models) {
-    const User = models.User;
+    const User = models['User'];
     User.hasMany(Chatroom, {onDelete: 'CASCADE', foreignKey: {allowNull: false}});
     Chatroom.belongsTo(User);
   };

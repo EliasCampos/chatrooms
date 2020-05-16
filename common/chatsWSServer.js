@@ -1,53 +1,67 @@
 const WebSocket = require('ws');
 
-const db = require('./db_connection.js');
-const {formatPrettyDate} = require('../utils');
+const parseSession = require('../middlewares/startSession');
+const { User, ChatMessage } = require('../models');
+
+const AUTHOR_INCLUDE = {model: User, as: 'author', attributes: ['id', 'username']};
 
 
 module.exports = (httpServer) => {
-    const chats = {};
+    const chats = new Map();
 
-    const server = new WebSocket.Server({server: httpServer});
-    server.on('connection', (client) => {
-        let wsChatId, wsUserId;
+    const server = new WebSocket.Server({ clientTracking: false, noServer: true });
+
+    httpServer.on('upgrade', async (request, socket, head) => {
+        parseSession(request, {}, () => {
+            if (!request.session.chatID) return socket.destroy();
+            server.handleUpgrade(request, socket, head, function(client) {
+                server.emit('connection', client, request);
+            });
+        });
+    });
+
+    server.on('connection', (client, request) => {
+        const userId = request.session.user.id;
+        const chatId = request.session.chatID;
+
+        console.log(`A new ws connection in ${chatId} - user ${userId}`);
+
+        if (!chats.has(chatId)) {
+            chats.set(chatId, new Map());
+        }
+        chats.get(chatId).set(userId, client);
 
         client.on('error', console.error);
         client.on('close', () => {
-            console.log(`A WS disconnected on '${wsChatId}'`);
-            delete chats[wsChatId][wsUserId];
-            console.log("Total connections:", Object.keys(chats[wsChatId]).length);
+            console.log(`A WS disconnected on '${chatId}'`);
+            chats.get(chatId).delete(userId);
         });
-        client.on('message', (event) => {
-            let dataObj;
-            try {dataObj = JSON.parse(event);}
-            catch(err) {return console.error(err);}
-            let {chatID, userID, isInit, content} = dataObj;
-            if (!(chatID in chats)) chats[chatID] = {};
-            if (isInit) {
-                console.log(`A new WS connection on '${chatID}'`);
-                wsChatId = chatID;
-                wsUserId = userID;
-                chats[chatID][userID] = client;
-                console.log("Total connections:", Object.keys(chats[chatID]).length);
-                return;
-            }
-            console.log("Got a message");
-            let dbSaveQuery = `INSERT INTO messages
-    (message_id, author, text, date, room_id, user_id)
-    VALUES (0, ?, ?, ?, ?, ?)`;
-            let {author, text} = content;
-            let date = new Date();
-            content.date = formatPrettyDate(date);
-            let params = [author, text, date, chatID, userID];
-            db.query(dbSaveQuery, params)
-                .then(() => {
-                    for (let user in chats[chatID]) {
-                        let ws = chats[chatID][user];
-                        if (ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify(content));
+        client.on('message', (data) => {
+            try {
+                let text = JSON.parse(data).text || null;
+
+                let msg = new ChatMessage();
+                msg.text = text;
+                msg.ChatroomId = chatId;
+                msg.authorId = userId;
+                msg.save()
+                    .then((savedMsg) => savedMsg.reload({include: AUTHOR_INCLUDE}))
+                    .then((savedMsg) => {
+                        let msgText = JSON.stringify(savedMsg);
+                        let chatClients = chats.get(savedMsg.ChatroomId).values();
+                        for (let cl of chatClients) {
+                            cl.send(msgText);
                         }
-                    }
-                });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        client.close();
+                    });
+
+            } catch (e) {
+                console.error(e);
+                client.close();
+            }
         });
     });
 

@@ -1,11 +1,12 @@
 const { Router } = require('express');
 const { Op } = require('sequelize');
 
-const { Chatroom } = require('../models');
+const { Chatroom, ChatMessage, User } = require('../models');
 
 const TEMPLATE_NAME = "chatRoom";
 const CREATE_TEMPLATE_NAME = "create";
 
+const AUTHOR_INCLUDE = {model: User, as: 'author', attributes: ['id', 'username']};
 
 const chatsRouter = new Router();
 
@@ -118,8 +119,14 @@ chatsRouter.get('/:id', async (request, response) => {
     if (chat.token !== null && !allowedRooms.includes(roomId)) {
         return response.status(403).render('error', { status: 403, message: "Forbidden"});
     }
-    let messages = [];
+    let messages = await ChatMessage.findAll({
+        where: { ChatroomId: chat.id },
+        include: [AUTHOR_INCLUDE],
+        order: [['id', 'DESC']],
+        limit: 100
+    });
     let params = {roomId, roomName: chat.name, userId, userName, messages};
+    request.session.chatID = roomId;
     response.render(TEMPLATE_NAME, params);
 });
 
