@@ -10,7 +10,7 @@ const usersRouter = new Router();
 
 usersRouter.get('/signup', (request, response) => {
     // If it's already existen user, let redirect him to main:
-    if (request.isAuthorize && !request.session.isJustSignedUp) {
+    if (request.session.user && !request.session.isJustSignedUp) {
         return response.redirect('/');
     }
 
@@ -49,7 +49,7 @@ usersRouter.post('/signup', async (request, response) => {
 
 
 usersRouter.get('/', async (request, response) => {
-    let isAuthorize = request.isAuthorize;
+    let isAuthorize = !!request.session.user;
     let username = isAuthorize ? request.session.user.username : null;
 
     let chatrooms = null;
@@ -66,7 +66,7 @@ usersRouter.get('/', async (request, response) => {
 
 usersRouter.post('/', async (request, response) => {
     // Log Out, if already log in
-    if (request.isAuthorize) {
+    if (request.session.user) {
         delete request.session.user;
         return response.redirect('/');
     }

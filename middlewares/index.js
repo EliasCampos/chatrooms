@@ -8,16 +8,7 @@ function setUser(request, response, next) {
     next();
 }
 
-function checkAuth(request, response, next) {
-    request.isAuthorize = ('user' in request.session);
-    request.error = request.isAuthorize ?
-        null
-        : {status:403, message:"Forbidden"};
-    next();
-}
-
 module.exports = {
-    checkAuth,
     setUser,
     startSession
 };

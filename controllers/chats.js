@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { Op } = require('sequelize');
 
+const authorizationRequired = require('../middlewares/authorizationRequired');
 const { Chatroom, ChatMessage, User } = require('../models');
 
 const TEMPLATE_NAME = "chatRoom";
@@ -11,18 +12,11 @@ const AUTHOR_INCLUDE = {model: User, as: 'author', attributes: ['id', 'username'
 const chatsRouter = new Router();
 
 
-chatsRouter.get('/create', (request, response) => {
-    // Checking authorization:
-    if (!request.isAuthorize)
-        return response.status(403).render('error', request.error);
+chatsRouter.get('/create', authorizationRequired, (request, response) => {
     return response.render(CREATE_TEMPLATE_NAME, {issue:"", newRoomID: null, currentName:""});
 });
 
-chatsRouter.post('/create', async (request, response) => {
-    // Checking authorization:
-    if (!request.isAuthorize)
-        return response.status(403).render(request.error);
-
+chatsRouter.post('/create', authorizationRequired, async (request, response) => {
     let chatname = String(request.body.chatname || '').trim();
     let password = String(request.body.password || '') || null;
 
@@ -53,11 +47,7 @@ chatsRouter.post('/create', async (request, response) => {
 
 });
 
-chatsRouter.post('/getaccess', async (request, response) => {
-    if (!request.isAuthorize) {
-        response.status(403).end();
-        return;
-    }
+chatsRouter.post('/getaccess', authorizationRequired, async (request, response) => {
     console.log(request.body);
     console.log(request.data);
     let chatname = String(request.body.chatname || '').trim();
@@ -80,12 +70,7 @@ chatsRouter.post('/getaccess', async (request, response) => {
 });
 
 
-chatsRouter.get('/list', async (request, response) => {
-    if (!request.isAuthorize) {
-        response.status(403).end();
-        return;
-    }
-
+chatsRouter.get('/list', authorizationRequired, async (request, response) => {
     const allowedIds = (request.session.allowedRooms || []);
 
     const allowedRooms = await Chatroom.findAll({
@@ -102,11 +87,7 @@ chatsRouter.get('/list', async (request, response) => {
 });
 
 
-chatsRouter.get('/:id', async (request, response) => {
-    // Checking authorization:
-    if (!request.isAuthorize)
-        return response.status(403).render('error', request.error);
-
+chatsRouter.get('/:id', authorizationRequired, async (request, response) => {
     let roomId = Number(request.params.id),
         userId = request.session.user.id,
         userName = request.session.user.name;
