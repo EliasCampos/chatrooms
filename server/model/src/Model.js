@@ -22,7 +22,7 @@ class Model {
     const values = Object.values(data);
 
     const itemsStr = items.join(", "); // [a, b, c, ..] => "a, b, c, ..."
-    const paramsStr = Array(values.length).fill("?").join(","); // "?, ?, ?..."
+    const paramsStr = items.map((_, i) => `$${i + 1}`).fill("?").join(","); // "$1, $2, $3..."
 
     const queryText = `INSERT INTO ${this._table}
     (${itemsStr}) VALUES (${paramsStr}) `;
@@ -47,7 +47,7 @@ class Model {
     const queryBase = `SELECT ${!items ? '*' : items.join(', ')} FROM ${this._table}`;
     const criteriasPart = !criterias ? ''
       : " WHERE "
-        + Object.keys(criterias).map(c => c + " = ?").join(` ${criteriaGlue} `);
+        + Object.keys(criterias).map((c, i) => c + ` = $${i + 1}`).join(` ${criteriaGlue} `);
     const orderPart = one || !aligner ? ''
       : ` ORDER BY ${aligner}` + (desc ? " DESC " : '');
 
@@ -63,7 +63,7 @@ Model.selectDefaultParams = {
   criteriaGlue: 'AND',
   aligner: null,
   desc: false
-}
+};
 
 // TODO: Handle wrong input; write tests for the module
 

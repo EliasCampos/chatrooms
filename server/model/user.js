@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt'), SALT_ROUNDS = 10;
+const bcrypt = require('bcryptjs'), SALT_ROUNDS = 10;
 const Model = require('./src/Model.js');
 
 const user = new Model('users');

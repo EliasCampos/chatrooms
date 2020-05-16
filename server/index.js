@@ -58,5 +58,5 @@ function handleConnection(client) {
 
 module.exports = port => httpServer.listen(port, () => {
   console.log(`Listening on ${port}...`);
-  db.connect().catch(err => {console.error("Can't connect database.")});
+  db.connect().catch(err => {console.error(`Can't connect database: ${err}`)});
 });

@@ -1,40 +1,39 @@
-const mysql = require('mysql');
+const pg = require('pg');
 
-const dbConnection = mysql.createConnection({});
+const client = new pg.Client({
+  host: 'db',
+  port:5432,
+  database: process.env.POSTGRES_DB,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+});
 
 function connect() {
-  return new Promise((resolve, reject) => {
-    dbConnection.connect(err => {
-      if (err) reject(err);
-      else resolve(console.log(`Connected to DB '${DB_PARAMS.database}'`));
-    });
-  });
+  return client.connect();
 }
+
 function disconnect() {
-  return new Promise((resolve, reject) => {
-    dbConnection.end(err => {
-      if (err) reject (err);
-      else {
-        console.log(`End of connection with DB '${DB_PARAMS.database}'`);
-        resolve();
-      }
-    });
-  });
+  return client.end();
 }
+
 function query(sql, values = null) {
+  console.log(sql);
   return new Promise((resolve, reject) => {
-    dbConnection.query(sql, values, (err, result) => {
+    client.query(sql, values, (err, result) => {
       if (err) reject(err);
-      else resolve(result);
+      else resolve(result.rows);
     });
   });
 }
+
 function queryOne(sql, values = null) {
+  console.log(sql);
   return new Promise((resolve, reject) => {
-    let query = dbConnection.query(sql, values);
-    query.on('error', reject);
-    query.on('result', resolve);
-    query.on('end', resolve);
+    client.query(sql, values, (err, result) => {
+      if (err) reject(err);
+      else if (result.rows.length === 0) resolve(null);
+      else resolve(result.rows[0]);
+    });
   });
 }
 
@@ -44,4 +43,4 @@ module.exports = {
   disconnect,
   query,
   queryOne
-}
+};

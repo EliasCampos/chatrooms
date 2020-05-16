@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt'), SALT_ROUNDS = 10;
+const bcrypt = require('bcryptjs'), SALT_ROUNDS = 10;
 const Model = require('./src/Model.js');
 
 const chatroom = new Model('chatrooms');
@@ -9,11 +9,13 @@ chatroom.getOwn = function(user) {
   * Returns a promise what resolves the users' allowed chatrooms objects.
   */
   return this.select({user_id: user.id}, ['room_id', 'room_name']);
-}
+};
+
 chatroom.getPublic = function() {
   // Returns a promise of all public chatrooms:
   return this.select({is_private: '0'}, ['room_id', 'room_name']);
-}
+};
+
 chatroom.getPrivate = function(roomId) {
   // Returns a promise of a private chatroom with given roomId:
   return this.select(
@@ -21,7 +23,8 @@ chatroom.getPrivate = function(roomId) {
     ['room_id', 'room_name'],
     {one:true}
   );
-}
+};
+
 
 chatroom.create = async function(
   owner,
@@ -64,14 +67,14 @@ chatroom.create = async function(
       room_token: passwordHash,
       is_private: password === "" ? '1' : '0',
       user_id: owner.id
-    }
+    };
     const {insertId} = await this.insert(roomData);
 
     result.room = {id: Number(insertId), name: chatname}
   }
 
   return result;
-}
+};
 
 chatroom.takeAccess = function(chatname, password) {
   /**
@@ -106,6 +109,6 @@ chatroom.takeAccess = function(chatname, password) {
       return Promise.resolve(result);
     });
   return expectedResult;
-}
+};
 
 module.exports = chatroom;
