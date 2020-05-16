@@ -1,0 +1,38 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres:10.8-alpine
+    networks:
+      - db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+  app:
+    build: .
+    volumes:
+      - .:/app/
+      - /app/node_modules
+    env_file:
+      - .env
+    networks:
+      - db
+      - backend
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    command: /usr/bin/env sh -c "
+      npm run dev"
+
+networks:
+  db:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+    name: chatrooms_db
+    driver: local

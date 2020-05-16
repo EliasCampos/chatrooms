@@ -1,2 +1,9 @@
+# Modules:
 /node_modules
+
+# Environment:
+.env
 config.js
+
+# IDE files:
+.idea/

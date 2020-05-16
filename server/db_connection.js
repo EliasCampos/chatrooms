@@ -1,7 +1,6 @@
 const mysql = require('mysql');
-const {DB_PARAMS} = require('../config.js');
 
-const dbConnection = mysql.createConnection(DB_PARAMS);
+const dbConnection = mysql.createConnection({});
 
 function connect() {
   return new Promise((resolve, reject) => {
