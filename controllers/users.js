@@ -10,52 +10,50 @@ const usersRouter = new Router();
 
 usersRouter.get('/signup', (request, response) => {
     // If it's already existen user, let redirect him to main:
-    if (request.isAuthorize && !request.new_user) {
+    if (request.isAuthorize && !request.session.isJustSignedUp) {
         return response.redirect('/');
     }
 
-    let isSignUp = 'new_user' in request;
-    let newUser = isSignUp ? request.new_user : null;
-    let params = {isSignUp, issue:null, currentName:"", newUser}
+    let currentName = !!request.session.isJustSignedUp ? request.session.user.username : '';
+    let params = { isSignUp: !!request.session.isJustSignedUp , issue: null, currentName };
+    request.session.isJustSignedUp = false;
     response.render(SIGN_UP_TEMPLATE_NAME, params);
 });
 
-usersRouter.post('/signup', (request, response) => {
-    let {login, firstPassword, secondPassword} = request.body;
+usersRouter.post('/signup', async (request, response) => {
+    let login = String(request.body.login || '').trim();
+    let firstPassword = String(request.body.firstPassword || '');
+    let secondPassword = String(request.body.secondPassword || '');
 
-    user.signUp(login, firstPassword, secondPassword)
-        .then(signUpResult => {
-            if (signUpResult.ok) {
-                request.session.user = signUpResult.user;
-                request.session.new_user = signUpResult.user.name;
-                response.redirect('/signup');
-            } else {
-                let issue = signUpResult.issue;
-                let currentName = /exists/.test(issue) ? "" : login;
-                let viewParams = {isSignUp: false, issue, currentName, newUser: null};
-                response.render(SIGN_UP_TEMPLATE_NAME, viewParams);
-            }
-        })
-        .catch(error => {
-            console.error(error);
-            response
-                .status(500)
-                .render('error', {status: 500,  message: "Internal Server Error"});
-        });
+    let issue = null;
+    let currentName = '';
+    if (!login || !firstPassword || !secondPassword) {
+        issue = "Both login and password are required";
+    }
+    else if ((await User.findOne({where: {username: login}}).then(user => !!user))) {
+        issue = `User with username ${login} already exists.`;
+    } else if (firstPassword !== secondPassword) {
+        issue = "Passwords didn't coincide each others";
+        currentName = login;
+    }
+
+    if (issue) return response.render(SIGN_UP_TEMPLATE_NAME, {isSignUp: false, issue, currentName, newUser: null});
+
+    let user = new User();
+    user.username = login;
+    await user.setPassword(firstPassword).then(() => user.save());
+    request.session.user = user;
+    request.session.isJustSignedUp = true;
+    response.redirect('/signup');
 });
 
 
 usersRouter.get('/', async (request, response) => {
     let isAuthorize = request.isAuthorize;
-    let username = isAuthorize ? request.session.user.name : null;
+    let username = isAuthorize ? request.session.user.username : null;
 
-    let chatrooms;
-    if (isAuthorize) {
-        chatrooms = await chatroom.getOwn(request.session.user);
-        chatrooms
-            .map(item => +item.room_id)
-            .forEach(id => user.addAllowedRoom(request.session.user, id));
-    }
+    let chatrooms = null;
+    // TODO: chatrooms
     // TODO: optimize rendering configuration procedure
     let viewParams = {
         isAuthorize,
@@ -68,27 +66,22 @@ usersRouter.get('/', async (request, response) => {
 
 usersRouter.post('/', async (request, response) => {
     // Log Out, if already log in
-    if (request.isAuthorize && ('logout' in request.body)) {
+    if (request.isAuthorize) {
         delete request.session.user;
         return response.redirect('/');
     }
     // Check if incoming data are correct
-    let {login, password} = request.body;
-    let logInResult = await user.logIn(login, password);
-    if (logInResult.ok) {
-        request.session.user = logInResult.user;
-        response.redirect('/');
+    let login = String(request.body.login || '').trim();
+    let password = String(request.body.password || '');
+
+    let user = await User.findOne({where: {username: login}});
+    if (user === null || !(await user.checkPassword(password))) {
+        let issue = "Incorrect login or password";
+        return response.render(TEMPLATE_NAME, {isAuthorize: false, issue, currentName:'', newUser: null});
     }
-    else {
-        // TODO: optimize rendering configuration procedure
-        let viewParams = {
-            isAuthorize:false,
-            issue:logInResult.issue,
-            username:null,
-            ownChatRooms: []
-        };
-        response.render(TEMPLATE_NAME, viewParams);
-    }
+
+    request.session.user = user;
+    response.redirect('/');
 });
 
 module.exports = {usersRouter};
