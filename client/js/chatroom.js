@@ -8,8 +8,11 @@ ws.addEventListener('close', () => {
 });
 ws.addEventListener('error', handleError);
 
-document.querySelector('form')
-  .addEventListener('submit', sendMessage);
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('msg-error').style.display = 'none';
+  document.querySelector('form')
+      .addEventListener('submit', sendMessage);
+});
 
 function initialize() {
   console.log("Connection is open.");
@@ -17,7 +20,16 @@ function initialize() {
 
 function acceptMessage(event) {
   console.log("Got a message");
-  let {createdAt, author, text} = JSON.parse(event.data);
+  let {error, message} = JSON.parse(event.data);
+  let errorDisplayElement = document.getElementById('msg-error');
+  if (error) {
+    errorDisplayElement.style.display = 'inline';
+    errorDisplayElement.innerText = error;
+    return;
+  }
+  errorDisplayElement.style.display = 'none';
+
+  let {createdAt, author, text} = message;
   let messageRow = document.createElement('li');
   let username = author.username.length > 13 ? `${author.username.slice(0, 13)}...` : author.username;
   const messageParts = {date: createdAt, author: username, text};

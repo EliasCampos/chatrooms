@@ -40,6 +40,7 @@
         <form action="/chatrooms/<%= room.id %>" method="PUT">
           <textarea name="text" placeholder="Write your message here..."
           rows="3" cols="40" required autofocus spellcheck="false"></textarea>
+          <span class="chat-msg-error" id="msg-error"></span>
           <input type="submit" value="Send">
         </form>
         <p><a class="action-link" href="/">Back to main</a></p>
