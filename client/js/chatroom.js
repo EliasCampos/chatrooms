@@ -10,8 +10,28 @@ ws.addEventListener('error', handleError);
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('msg-error').style.display = 'none';
-  document.querySelector('form')
-      .addEventListener('submit', sendMessage);
+  const form = document.querySelector('form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    sendMessage(e.target);
+  });
+
+  let isEnterPressed = false;
+
+  form.text.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!isEnterPressed && form.text.value.length > 0) {
+        isEnterPressed = true;
+        sendMessage(form);
+      }
+    }
+  });
+  form.text.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' && isEnterPressed) {
+      isEnterPressed = false;
+    }
+  })
 });
 
 function initialize() {
@@ -43,13 +63,8 @@ function acceptMessage(event) {
   messageContainer
     .insertBefore(messageRow, messageContainer.firstChild);
 }
-function sendMessage(event) {
-  event.preventDefault();
-
-  let form = event.target;
-  let items = form.elements;
-  let messageData = { text: items.text.value };
-
+function sendMessage(form) {
+  let messageData = { text: form.text.value };
   form.reset();
   ws.send(JSON.stringify(messageData));
 }

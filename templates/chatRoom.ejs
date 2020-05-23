@@ -39,7 +39,8 @@
       <div id="message-panel">
         <form action="/chatrooms/<%= room.id %>" method="PUT">
           <textarea name="text" placeholder="Write your message here..."
-          rows="3" cols="40" required autofocus spellcheck="false"></textarea>
+          rows="1" cols="50" required autofocus spellcheck="false"
+          minlength="1" maxlength="50"></textarea>
           <span class="chat-msg-error" id="msg-error"></span>
           <input type="submit" value="Send">
         </form>
