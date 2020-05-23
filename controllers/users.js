@@ -44,7 +44,9 @@ usersRouter.post('/signup', [
 ], async (request, response) => {
     let errors = validationResult(request);
     if (!errors.isEmpty()) {
-        const ctx = {login: request.body.login || '', isSignUp: false, errors: errors.array({ onlyFirstError: true })};
+        const ctx = {
+            login: request.body.login || '', isSignUp: false, errors: errors.array({ onlyFirstError: true })
+        };
         return response.render(SIGN_UP_TEMPLATE_NAME, ctx);
     }
     let user = new User();

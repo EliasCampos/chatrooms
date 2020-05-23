@@ -1,8 +1,8 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const logger = require('morgan')('tiny');
-const { setUser, startSession } = require('./middlewares');
 
+const { setUser, startSession } = require('./middlewares');
 const { chatsRouter, usersRouter } = require('./controllers');
 
 const app = express();
@@ -13,7 +13,7 @@ app.set('views', "templates");
 // Middlewares:
 app.use(logger);
 app.use(bodyParser.json());
-app.use(express.static('client'));
+app.use(express.static('static'));
 app.use(express.urlencoded({extended:false}));
 
 app.use(startSession);
